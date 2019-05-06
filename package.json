@@ -2,13 +2,14 @@
   "name": "wti-middleware",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "ncc build src/index.js -o dist --minify"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@zeit/ncc": "^0.18.2",
     "axios": "^0.18.0",
     "node-cache": "^4.2.0"
   }
