@@ -35,7 +35,7 @@ const getProject = async token => {
 const fetchTranslation = async (token, file) => {
   const { master_project_file_id: masterId, locale_code, id } = file
   const fileId = masterId || id
-  let translation = null
+  let translation = {}
 
   try {
     const response = await httpClient.get(
@@ -50,11 +50,11 @@ const fetchTranslation = async (token, file) => {
   return translation
 }
 
-const fetchData = async (token, country) => {
+const fetchData = async (token, locale) => {
   const { project_files: files } = await getProject(token)
 
   const file =
-    files.find((f) => f.locale_code === country) ||
+    files.find((f) => f.locale_code === locale) ||
     files.find((f) => f.locale_code === 'en')
 
   const translation = await fetchTranslation(token, file)
@@ -66,14 +66,14 @@ module.exports = (projectToken) => async (
   res,
   next
 ) => {
-  const { country } = req.headers
-  const key = 'WTI::TRANSLATIONS::' + country
+  const { wti_locale } = req.headers
+  const key = 'WTI::TRANSLATIONS::' + wti_locale
 
   let data
   const cachedVal = await get(key)
 
   if (!cachedVal) {
-    data = await fetchData(projectToken, country)
+    data = await fetchData(projectToken, wti_locale)
     set(key, data, 60 * 30)
   }
 
