@@ -11,6 +11,9 @@ const httpClient = axios.create({
 const set = promisify(cache.set)
 const get = promisify(cache.get)
 
+const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
+const LANGUAGE_CACHE_TTL = 60 * 30 // 30 Minutes
+
 const getProject = async token => {
   const key = 'WTI::TRANSLATIONS::PROJECT'
   let cProject = await get(key)
@@ -22,10 +25,10 @@ const getProject = async token => {
         data: { project }
       } = response
 
-      set(key, project, 60 * 60 * 24)
+      set(key, project, PROJECT_CACHE_TTL)
       cProject = project
     } catch (e) {
-      // do nothing
+      console.log('Could not fetch WTI project')
     }
   }
 
@@ -44,7 +47,7 @@ const fetchTranslation = async (token, file) => {
 
     translation = response.data
   } catch (e) {
-    // do nothing
+    console.log('Could not fetch WTI translation for', locale_code)
   }
 
   return translation
@@ -74,7 +77,7 @@ module.exports = (projectToken) => async (
 
   if (!cachedVal) {
     data = await fetchData(projectToken, wti_locale)
-    set(key, data, 60 * 30)
+    set(key, data, LANGUAGE_CACHE_TTL)
   }
 
   req.translations = cachedVal || data
