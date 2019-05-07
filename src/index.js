@@ -36,18 +36,18 @@ const getProject = async token => {
 }
 
 const fetchTranslation = async (token, file) => {
-  const { master_project_file_id: masterId, locale_code, id } = file
+  const { master_project_file_id: masterId, locale_code: locale, id } = file
   const fileId = masterId || id
   let translation = {}
 
   try {
     const response = await httpClient.get(
-      `/${token}/files/${fileId}/locales/${locale_code}`
+      `/${token}/files/${fileId}/locales/${locale}`
     )
 
     translation = response.data
   } catch (e) {
-    console.log('Could not fetch WTI translation for', locale_code)
+    console.log('Could not fetch WTI translation for', locale)
   }
 
   return translation
@@ -57,26 +57,23 @@ const fetchData = async (token, locale) => {
   const { project_files: files } = await getProject(token)
 
   const file =
-    files.find((f) => f.locale_code === locale) ||
-    files.find((f) => f.locale_code === 'en')
+    files.find(f => f.locale_code === locale) ||
+    files.find(f => f.locale_code === 'en')
 
   const translation = await fetchTranslation(token, file)
+
   return translation
 }
 
-module.exports = (projectToken) => async (
-  req,
-  res,
-  next
-) => {
-  const { wti_locale } = req.headers
-  const key = 'WTI::TRANSLATIONS::' + wti_locale
+module.exports = projectToken => async (req, res, next) => {
+  const { wti_locale: locale } = req.headers
+  const key = `WTI::TRANSLATIONS::${locale}`
 
   let data
   const cachedVal = await get(key)
 
   if (!cachedVal) {
-    data = await fetchData(projectToken, wti_locale)
+    data = await fetchData(projectToken, locale)
     set(key, data, LANGUAGE_CACHE_TTL)
   }
 

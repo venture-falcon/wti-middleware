@@ -1,0 +1,21 @@
+{
+  "extends": ["eslint-config-with-prettier"],
+  "rules": {
+    "import/no-dynamic-require": 0,
+    "import/no-extraneous-dependencies": 0,
+    "import/no-unresolved": 0,
+    "react/react-in-jsx-scope": 0,
+    "no-underscore-dangle": 0,
+    "no-plusplus": 0,
+    "no-console": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "trailingComma": "none",
+        "bracketSpacing": true,
+        "semi": false,
+        "singleQuote": true
+      }
+    ]
+  }
+}

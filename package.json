@@ -12,5 +12,9 @@
     "@zeit/ncc": "^0.18.2",
     "axios": "^0.18.0",
     "node-cache": "^4.2.0"
+  },
+  "devDependencies": {
+    "eslint-config-with-prettier": "^6.0.0",
+    "prettier": "^1.17.0"
   }
 }
