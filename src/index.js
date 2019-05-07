@@ -53,9 +53,6 @@ const fetchTranslation = async (token, file) => {
 const fetchData = async (token, locale) => {
   const { project_files: files } = await getProject(token)
 
-  console.log(locale)
-  console.log('files', files)
-
   const file =
     files.find((f) => f.locale_code === locale) ||
     files.find((f) => f.locale_code === 'en')
