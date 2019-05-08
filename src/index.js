@@ -79,9 +79,10 @@ module.exports = projectToken => async (req, res, next) => {
   } else {
     const ttl = getTTL(key)
     // check for key expiry
-    if(typeof ttl === 'undefined' || ttl === 0) {
-      fetchData(projectToken, wti_locale)
-        .then(data => set(key, data, LANGUAGE_CACHE_TTL))
+    if (typeof ttl === 'undefined' || ttl === 0) {
+      fetchData(projectToken, locale).then(newData =>
+        set(key, newData, LANGUAGE_CACHE_TTL)
+      )
     }
   }
 
