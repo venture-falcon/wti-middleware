@@ -2,7 +2,7 @@ const axios = require('axios')
 const NodeCache = require('node-cache')
 const { promisify } = require('util')
 
-const cache = new NodeCache({ checkperiod: 240 })
+const cache = new NodeCache({ checkperiod: 240, deleteOnExpire: false })
 const httpClient = axios.create({
   baseURL: 'https://webtranslateit.com/api/projects',
   timeout: 1000
@@ -10,6 +10,7 @@ const httpClient = axios.create({
 
 const set = promisify(cache.set)
 const get = promisify(cache.get)
+const getTTL = promisify(cache.getTtl)
 
 const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
 const LANGUAGE_CACHE_TTL = 60 * 30 // 30 Minutes
@@ -75,6 +76,13 @@ module.exports = projectToken => async (req, res, next) => {
   if (!cachedVal) {
     data = await fetchData(projectToken, locale)
     set(key, data, LANGUAGE_CACHE_TTL)
+  } else {
+    const ttl = getTTL(key)
+    // check for key expiry
+    if(typeof ttl === 'undefined' || ttl === 0) {
+      fetchData(projectToken, wti_locale)
+        .then(data => set(key, data, LANGUAGE_CACHE_TTL))
+    }
   }
 
   req.translations = cachedVal || data
