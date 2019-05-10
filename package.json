@@ -7,6 +7,10 @@
     "build": "ncc build src/index.js -o dist --minify",
     "test": "mocha src"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/venture-falcon/wti-middleware.git"
+  },
   "author": "Nexure AB",
   "license": "MIT",
   "dependencies": {
