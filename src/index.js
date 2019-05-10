@@ -8,7 +8,7 @@ const httpClient = axios.create({
 })
 
 const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
-const LANGUAGE_CACHE_TTL = 60 * 30 // 30 Minutes
+const LANGUAGE_CACHE_TTL = 60 * 10 // 10 Minutes
 
 const getProject = async token => {
   const key = 'WTI::TRANSLATIONS::PROJECT'
@@ -75,9 +75,10 @@ module.exports = projectToken => async (req, res, next) => {
     const ttl = cache.getTtl(key)
     // check for key expiry
     if (typeof ttl === 'undefined' || ttl === 0) {
-      fetchData(projectToken, locale).then(newData =>
+      fetchData(projectToken, locale).then(newData => {
+        console.log('fetched new data', Object.keys(newData))
         cache.set(key, newData, LANGUAGE_CACHE_TTL)
-      )
+      })
     }
   }
 
