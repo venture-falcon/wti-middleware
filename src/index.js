@@ -1,14 +1,15 @@
 const axios = require('axios')
 const NodeCache = require('node-cache')
 
+const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
+const LANGUAGE_CACHE_TTL = 60 * 10 // 10 Minutes
+
 const cache = new NodeCache({ checkperiod: 240, deleteOnExpire: false })
+
 const httpClient = axios.create({
   baseURL: 'https://webtranslateit.com/api/projects',
   timeout: 1000
 })
-
-const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
-const LANGUAGE_CACHE_TTL = 60 * 10 // 10 Minutes
 
 const getProject = async token => {
   const key = 'WTI::TRANSLATIONS::PROJECT'
@@ -61,28 +62,27 @@ const fetchData = async (token, locale) => {
   return translation
 }
 
-module.exports = projectToken => async (req, res, next) => {
-  const { wti_locale: locale } = req.headers
-  const key = `WTI::TRANSLATIONS::${locale}`
-
-  let data
-  const cachedVal = await cache.get(key)
-
-  if (!cachedVal) {
-    data = await fetchData(projectToken, locale)
+module.exports = projectToken => {
+  cache.on('expired', (key, value) => {
+    const locale = key.split('WTI::TRANSLATIONS::')[1]
+    const data = fetchData(projectToken, locale)
     cache.set(key, data, LANGUAGE_CACHE_TTL)
-  } else {
-    const ttl = cache.getTtl(key)
-    // check for key expiry
-    if (typeof ttl === 'undefined' || ttl === 0) {
-      fetchData(projectToken, locale).then(newData => {
-        console.log('fetched new data', Object.keys(newData))
-        cache.set(key, newData, LANGUAGE_CACHE_TTL)
-      })
+  })
+
+  return async (req, res, next) => {
+    const { wti_locale: locale } = req.headers
+    const key = `WTI::TRANSLATIONS::${locale}`
+
+    let data
+    const cachedVal = await cache.get(key)
+
+    if (!cachedVal) {
+      data = await fetchData(projectToken, locale)
+      cache.set(key, data, LANGUAGE_CACHE_TTL)
     }
+
+    req.translations = cachedVal || data
+
+    next()
   }
-
-  req.translations = cachedVal || data
-
-  next()
 }
