@@ -68,7 +68,7 @@ const fetchData = async (token, locale) => {
 
 module.exports = projectToken => {
   cache.on('expired', async (key, value) => {
-    if (key === 'WTI::TRANSLATIONS::PROJECT') {
+    if (key === projectKey) {
       await fetchProject(projectToken)
     } else {
       const locale = key.split('WTI::TRANSLATIONS::')[1]
