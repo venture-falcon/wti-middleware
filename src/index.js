@@ -4,6 +4,8 @@ const NodeCache = require('node-cache')
 const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
 const LANGUAGE_CACHE_TTL = 60 * 10 // 10 Minutes
 
+const projectKey = 'WTI::TRANSLATIONS::PROJECT'
+
 const cache = new NodeCache({ checkperiod: 240, deleteOnExpire: false })
 
 const httpClient = axios.create({
@@ -11,25 +13,22 @@ const httpClient = axios.create({
   timeout: 1000
 })
 
-const getProject = async token => {
-  const key = 'WTI::TRANSLATIONS::PROJECT'
-  let cProject = await cache.get(key)
-  if (!cProject) {
-    try {
-      const response = await httpClient.get(`/${token}`)
+const fetchProject = async token => {
+  let res
+  try {
+    const response = await httpClient.get(`/${token}`)
 
-      const {
-        data: { project }
-      } = response
+    const {
+      data: { project }
+    } = response
 
-      cache.set(key, project, PROJECT_CACHE_TTL)
-      cProject = project
-    } catch (e) {
-      console.log('Could not fetch WTI project')
-    }
+    res = project
+    cache.set(projectKey, project, PROJECT_CACHE_TTL)
+  } catch (e) {
+    console.log('Could not fetch WTI project')
   }
 
-  return cProject
+  return res
 }
 
 const fetchTranslation = async (token, file) => {
@@ -51,7 +50,12 @@ const fetchTranslation = async (token, file) => {
 }
 
 const fetchData = async (token, locale) => {
-  const { project_files: files } = await getProject(token)
+  let project = await cache.get(projectKey)
+  if (!project) {
+    project = await fetchProject(token)
+  }
+
+  const { project_files: files } = project
 
   const file =
     files.find(f => f.locale_code === locale) ||
@@ -63,10 +67,14 @@ const fetchData = async (token, locale) => {
 }
 
 module.exports = projectToken => {
-  cache.on('expired', (key, value) => {
-    const locale = key.split('WTI::TRANSLATIONS::')[1]
-    const data = fetchData(projectToken, locale)
-    cache.set(key, data, LANGUAGE_CACHE_TTL)
+  cache.on('expired', async (key, value) => {
+    if (key === 'WTI::TRANSLATIONS::PROJECT') {
+      await fetchProject(projectToken)
+    } else {
+      const locale = key.split('WTI::TRANSLATIONS::')[1]
+      const data = await fetchData(projectToken, locale)
+      cache.set(key, data, LANGUAGE_CACHE_TTL)
+    }
   })
 
   return async (req, res, next) => {
