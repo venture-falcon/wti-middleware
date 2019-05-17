@@ -11,7 +11,7 @@ import wti from 'wti-middleware'
 const middleware = wti('WTI_READ_KEY')
 
 app.use((req, res, next) => {
-  req.wti_locale = 'en-US'
+  req.headers.wti_locale = 'en-US'
   next()
 })
 app.use(middleware)
