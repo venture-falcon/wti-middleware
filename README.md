@@ -6,6 +6,8 @@ Fetch translations from your webTranslate it project into your app
 
 This middleware needs a request header with the current locale to work properly
 
+The middleware factory function takes 2 parameters, your WTI read key and an optional TTL in seconds for cache
+
 ```javascript
 import wti from 'wti-middleware'
 const middleware = wti('WTI_READ_KEY')

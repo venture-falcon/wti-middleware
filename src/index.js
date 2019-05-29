@@ -66,14 +66,14 @@ const fetchData = async (token, locale) => {
   return translation
 }
 
-module.exports = projectToken => {
+module.exports = (projectToken, ttl = LANGUAGE_CACHE_TTL) => {
   cache.on('expired', async (key, value) => {
     if (key === projectKey) {
       await fetchProject(projectToken)
     } else {
       const locale = key.split('WTI::TRANSLATIONS::')[1]
       const data = await fetchData(projectToken, locale)
-      cache.set(key, data, LANGUAGE_CACHE_TTL)
+      cache.set(key, data, ttl)
     }
   })
 
@@ -86,7 +86,7 @@ module.exports = projectToken => {
 
     if (!cachedVal) {
       data = await fetchData(projectToken, locale)
-      cache.set(key, data, LANGUAGE_CACHE_TTL)
+      cache.set(key, data, ttl)
     }
 
     req.translations = cachedVal || data
