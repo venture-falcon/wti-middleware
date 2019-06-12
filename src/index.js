@@ -73,7 +73,9 @@ module.exports = (projectToken, ttl = LANGUAGE_CACHE_TTL) => {
     } else {
       const locale = key.split('WTI::TRANSLATIONS::')[1]
       const data = await fetchData(projectToken, locale)
-      cache.set(key, data, ttl)
+      if (data && Object.keys(data).length) {
+        cache.set(key, data, ttl)
+      }
     }
   })
 
