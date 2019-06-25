@@ -1,5 +1,6 @@
 const axios = require('axios')
 const NodeCache = require('node-cache')
+const path = require('path')
 
 const PROJECT_CACHE_TTL = 60 * 60 * 24 // 24 Hours
 const LANGUAGE_CACHE_TTL = 60 * 10 // 10 Minutes
@@ -80,6 +81,10 @@ module.exports = (projectToken, ttl = LANGUAGE_CACHE_TTL) => {
   })
 
   return async (req, res, next) => {
+    if (path.extname(req.path)) {
+      return next()
+    }
+
     const { wti_locale: locale } = req.headers
     const key = `WTI::TRANSLATIONS::${locale}`
 
@@ -93,6 +98,6 @@ module.exports = (projectToken, ttl = LANGUAGE_CACHE_TTL) => {
 
     req.translations = cachedVal || data
 
-    next()
+    return next()
   }
 }
