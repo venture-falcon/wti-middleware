@@ -52,7 +52,7 @@ const fetchTranslation = async (token, file) => {
 
 const fetchData = async (token, locale) => {
   let project = await cache.get(projectKey)
-  if (!project) {
+  if (!project || !project.project_files) {
     project = await fetchProject(token)
   }
 
