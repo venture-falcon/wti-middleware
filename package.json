@@ -1,6 +1,6 @@
 {
   "name": "@nexure/wti-middleware",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Fetch translations from your webTranslate it project into your app",
   "main": "dist/index.js",
   "scripts": {
