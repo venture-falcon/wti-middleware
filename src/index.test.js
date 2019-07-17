@@ -25,9 +25,18 @@ describe('WTI Middleware', () => {
   })
 
   it('Request with locale', async () => {
-    const req = { headers: { wti_locale: 'en-US' } }
-    await wti('token')(req, {}, () => {})
+    const req = { headers: { wti_locale: 'en-US' }, path: '/' }
+    await wti({ projectToken: 'token' })(req, {}, () => {})
 
     expect(req.translations.foo).to.equal('bar')
+  })
+
+  it('As plain function', async () => {
+    const translations = await wti({
+      projectToken: 'token',
+      plainFunction: true
+    })('en-US')
+
+    expect(translations.foo).to.equal('bar')
   })
 })
