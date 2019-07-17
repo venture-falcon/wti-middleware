@@ -32,7 +32,7 @@ const fun = wti({
   plainFunction: true // return plain function, optinal
 })
 
-const translations = fun('en-US')
+const translations = await fun('en-US')
 ```
 
 ### V 1.X
