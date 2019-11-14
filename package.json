@@ -21,6 +21,6 @@
     "prettier": "^1.17.0",
     "@zeit/ncc": "^0.18.2",
     "axios": "^0.19.0",
-    "node-cache": "^4.2.0"
+    "node-cache": "^5.0.1"
   }
 }
