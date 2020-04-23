@@ -11,8 +11,10 @@ const cache = new NodeCache({ checkperiod: 240, deleteOnExpire: false })
 
 const httpClient = axios.create({
   baseURL: 'https://webtranslateit.com/api/projects',
-  timeout: 1000
+  timeout: 3000
 })
+
+const locked = new Set([])
 
 const fetchProject = async token => {
   let res
@@ -26,7 +28,8 @@ const fetchProject = async token => {
     res = project
     cache.set(projectKey, project, PROJECT_CACHE_TTL)
   } catch (e) {
-    console.log('Could not fetch WTI project')
+    console.log('Could not fetch WTI project', token)
+    console.log(e)
   }
 
   return res
@@ -51,7 +54,7 @@ const fetchTranslation = async (token, file) => {
 }
 
 const fetchData = async (token, locale) => {
-  let project = await cache.get(projectKey)
+  let project = cache.get(projectKey)
   if (!project || !project.project_files) {
     project = await fetchProject(token)
   }
@@ -82,6 +85,10 @@ module.exports = ({
   plainFunction = false
 }) => {
   cache.on('expired', async (key, value) => {
+    if (locked.has(key)) {
+      return
+    }
+    locked.add(key)
     if (key === projectKey) {
       await fetchProject(projectToken)
     } else {
@@ -91,6 +98,7 @@ module.exports = ({
         cache.set(key, data, ttl)
       }
     }
+    locked.delete(key)
   })
 
   if (plainFunction) {
@@ -98,7 +106,7 @@ module.exports = ({
       const key = `WTI::TRANSLATIONS::${locale}`
 
       let data
-      const cachedVal = await cache.get(key)
+      const cachedVal = cache.get(key)
 
       if (!cachedVal) {
         data = await fetchData(projectToken, locale)
@@ -118,7 +126,7 @@ module.exports = ({
     const key = `WTI::TRANSLATIONS::${locale}`
 
     let data
-    const cachedVal = await cache.get(key)
+    const cachedVal = cache.get(key)
 
     if (!cachedVal) {
       data = await fetchData(projectToken, locale)
